@@ -1,0 +1,189 @@
+#include <bits/stdc++.h>
+    using namespace std;
+
+    template<typename T>
+    class TravelingSalesperson {
+    private:
+        map<T, pair<int, int>> all_dict;
+        map<T, pair<int, int>> all_dict_copy;
+        int how_much_point;
+
+    public:
+        TravelingSalesperson() {}
+
+        void getInput() {
+            cout << "Enter the number of points (0-26): ";
+            cin >> how_much_point;
+
+            cout << "Enter the coordinates for each point:\n";
+            for (int i = 0; i < how_much_point; i++) {
+                T point_name = 'A' + i;
+                int x, y;
+                cout << "Enter the coordinates for point " << point_name << ": ";
+                cin >> x >> y;
+                all_dict[point_name] = make_pair(x, y);
+                all_dict_copy[point_name] = make_pair(x, y);
+            }
+        }
+
+        void printCoordinates(const map<T, pair<int, int>>& dict) {
+            for (const auto& point : dict) {
+                cout << point.first << ": (" << point.second.first << ", " << point.second.second << ")" << endl;
+            }
+            cout << endl;
+        }
+
+        const map<T, pair<int, int>>& getAllDictCopy() const {
+            return all_dict_copy;
+        }
+
+        void calculateDistances() {
+            // Chasing the order
+            cout << "Chasing the order:" << endl;
+            T last = 'A';
+            int last_x = all_dict[last].first;
+            int last_y = all_dict[last].second;
+            double temp_dis = 0.0;
+            double total_distance = 0.0;
+
+            for (const auto& point : all_dict) {
+                if (point.first == 'A') {
+                    continue;
+                }
+
+                temp_dis = sqrt(pow(point.second.first - last_x, 2) + pow(point.second.second - last_y, 2));
+                total_distance += temp_dis;
+                cout << last << " - " << point.first << " : " << fixed << temp_dis << endl;
+                last = point.first;
+                last_x = point.second.first;
+                last_y = point.second.second;
+            }
+
+            cout << "Total distance: " << total_distance << endl << endl;
+
+            // The greedy one (ending at the last order)
+            cout << "The greedy one (ending at the last order):" << endl;
+            vector<T> route;
+            vector<double> distance;
+            total_distance = 0.0;
+
+            for (int i = 0; i < how_much_point; i++) {
+                if (i == 0) {
+                    route.push_back('A');
+                    distance.push_back(0);
+                    last_x = all_dict[route.back()].first;
+                    last_y = all_dict[route.back()].second;
+                    all_dict.erase(route.back());
+                    continue;
+                }
+
+                if (i == how_much_point - 1) {
+                    T last_dot = 'A' + how_much_point - 1;
+                    route.push_back(last_dot);
+                    temp_dis = sqrt(pow(last_x - all_dict[last_dot].first, 2) + pow(last_y - all_dict[last_dot].second, 2));
+                    distance.push_back(temp_dis);
+                    break;
+                }
+
+                double min_distance = -1.0;
+                T temp_dot = ' ';
+                temp_dis = 0.0;
+
+                for (const auto& dot : all_dict) {
+                    if (dot.first == 'A' + how_much_point - 1) {
+                        break;
+                    }
+
+                    temp_dis = sqrt(pow(last_x - dot.second.first, 2) + pow(last_y - dot.second.second, 2));
+
+                    if (min_distance == -1.0 || min_distance > temp_dis) {
+                        temp_dot = dot.first;
+                        min_distance = temp_dis;
+                    }
+                }
+
+                route.push_back(temp_dot);
+                distance.push_back(min_distance);
+                min_distance = -1.0;
+                last_x = all_dict[route.back()].first;
+                last_y = all_dict[route.back()].second;
+                all_dict.erase(route.back());
+            }
+
+            last = ' ';
+
+            for (int i = 0; i < how_much_point; i++) {
+                if (i == 0) {
+                    last = 'A';
+                    continue;
+                }
+
+                cout << last << " - " << route[i] << " : " << fixed << distance[i] << endl;
+                total_distance += distance[i];
+                last = route[i];
+            }
+
+            cout << "Total distance: " << total_distance << endl << endl;
+
+            // The greedy one (no order)
+            cout << "The greedy one (no order):" << endl;
+            route.clear();
+            distance.clear();
+            total_distance = 0.0;
+
+            for (int i = 0; i < how_much_point; i++) {
+                if (i == 0) {
+                    route.push_back('A');
+                    distance.push_back(0);
+                    last_x = all_dict_copy[route.back()].first;
+                    last_y = all_dict_copy[route.back()].second;
+                    all_dict_copy.erase(route.back());
+                    continue;
+                }
+
+                double min_distance = -1.0;
+                T temp_dot = ' ';
+                temp_dis = 0.0;
+
+                for (const auto& dot : all_dict_copy) {
+                    temp_dis = sqrt(pow(last_x - dot.second.first, 2) + pow(last_y - dot.second.second, 2));
+
+                    if (min_distance == -1.0 || min_distance > temp_dis) {
+                        temp_dot = dot.first;
+                        min_distance = temp_dis;
+                    }
+                }
+
+                route.push_back(temp_dot);
+                distance.push_back(min_distance);
+                min_distance = -1.0;
+                last_x = all_dict_copy[route.back()].first;
+                last_y = all_dict_copy[route.back()].second;
+                all_dict_copy.erase(route.back());
+            }
+
+            last = ' ';
+
+            for (int i = 0; i < how_much_point; i++) {
+                if (i == 0) {
+                    last = 'A';
+                    continue;
+                }
+
+                cout << last << " - " << route[i] << " : " << fixed << distance[i] << endl;
+                total_distance += distance[i];
+                last = route[i];
+            }
+
+            cout << "Total distance: " << total_distance << endl;
+        }
+    };
+
+    int main() {
+        TravelingSalesperson<char> tsp;
+        tsp.getInput();
+        tsp.printCoordinates(tsp.getAllDictCopy());
+        tsp.calculateDistances();
+
+        return 0;
+    }
